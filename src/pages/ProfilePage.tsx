@@ -165,7 +165,7 @@ export default function ProfilePage() {
               <div>
                 <h3 className="font-semibold text-slate-800 mb-3">Interesses</h3>
                 <div className="flex flex-wrap gap-2">
-                  {user?.interests.map(interest => (
+                  {user?.interests?.map((interest: string) => (
                     <span key={interest} className="px-3 py-1.5 bg-primary-50 text-primary-700 rounded-full text-sm font-medium">
                       {interest}
                     </span>
