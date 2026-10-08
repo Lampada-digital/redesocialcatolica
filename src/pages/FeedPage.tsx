@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { usePosts, useCreatePost, useLikePost } from '../hooks/usePosts';
-import { formatTimeAgo } from '../data/mockData';
+import { formatTimeAgo } from '../utils/format';
 import {
   Heart, MessageCircle, Share2, Bookmark, Globe, Users, Lock,
   MoreHorizontal, Send, Image, Smile, MapPin, Cross

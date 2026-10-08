@@ -1,10 +1,10 @@
-import { supabase, isDemoMode } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 import type { Comment } from '../types/database';
 
 export const commentService = {
   async createComment(postId: string, userId: string, content: string, parentId?: string): Promise<{ comment: Comment | null; error: string | null }> {
-    if (isDemoMode || !supabase) {
-      return { comment: null, error: 'Modo demo: não é possível criar comentários' };
+    if (!supabase) {
+      return { comment: null, error: 'Supabase não configurado' };
     }
 
     try {
@@ -30,8 +30,8 @@ export const commentService = {
   },
 
   async getComments(postId: string, limit: number = 50): Promise<{ comments: Comment[]; error: string | null }> {
-    if (isDemoMode || !supabase) {
-      return { comments: [], error: 'Modo demo: comentários não disponíveis' };
+    if (!supabase) {
+      return { comments: [], error: 'Supabase não configurado' };
     }
 
     try {
@@ -54,8 +54,8 @@ export const commentService = {
   },
 
   async getReplies(commentId: string): Promise<{ replies: Comment[]; error: string | null }> {
-    if (isDemoMode || !supabase) {
-      return { replies: [], error: 'Modo demo: respostas não disponíveis' };
+    if (!supabase) {
+      return { replies: [], error: 'Supabase não configurado' };
     }
 
     try {
@@ -76,8 +76,8 @@ export const commentService = {
   },
 
   async updateComment(commentId: string, userId: string, content: string): Promise<{ comment: Comment | null; error: string | null }> {
-    if (isDemoMode || !supabase) {
-      return { comment: null, error: 'Modo demo: não é possível editar' };
+    if (!supabase) {
+      return { comment: null, error: 'Supabase não configurado' };
     }
 
     try {
@@ -97,8 +97,8 @@ export const commentService = {
   },
 
   async deleteComment(commentId: string, userId: string): Promise<{ error: string | null }> {
-    if (isDemoMode || !supabase) {
-      return { error: 'Modo demo: não é possível excluir' };
+    if (!supabase) {
+      return { error: 'Supabase não configurado' };
     }
 
     try {

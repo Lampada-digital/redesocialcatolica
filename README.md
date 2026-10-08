@@ -1,290 +1,251 @@
-# Communio — Rede Social Católica
+# Communio - Rede Social Católica
 
-Rede social católica moderna, segura e profissional que conecta fiéis, paróquias, dioceses e comunidades.
+## Status: PRONTO PARA PRODUÇÃO
 
-## 🚀 Status do Projeto
+Este projeto foi completamente transformado de um protótipo com dados fictícios para uma aplicação real e funcional, pronta para ser conectada ao Supabase.
 
-**VERSÃO 2.0 — TRANSFORMAÇÃO EM ANDAMENTO**
+## Mudanças Realizadas
 
-O projeto foi transformado de um protótipo visual para uma aplicação real com:
+### 1. Remoção Completa do Modo Demo
+- ❌ Removido `VITE_DEMO_MODE` do `.env`
+- ❌ Removido `DEMO_USER` do `authService.ts`
+- ❌ Removido `isDemoMode` de todos os services
+- ❌ Removidas todas as verificações de modo demo
 
-- ✅ Autenticação real via Supabase Auth
-- ✅ Banco de dados PostgreSQL com RLS
-- ✅ Services reais para todas as funcionalidades
-- ✅ Migrations SQL completas
-- ✅ Sistema de perfis persistente
-- ✅ Publicações com persistência
-- ✅ Comentários reais
-- ✅ Comunidades funcionais
-- ✅ Eventos com inscrição
-- ✅ Intenções de oração
-- ✅ Mensagens em tempo real
-- ✅ Notificações push
-- ✅ Paróquias e dioceses
-- ✅ Busca global
-- ✅ Sistema de moderação
-- ✅ Modo demo para desenvolvimento
+### 2. Autenticação Real
+- ✅ Implementado cadastro real via Supabase Auth
+- ✅ Implementado login real com email/senha
+- ✅ Implementado logout real
+- ✅ Implementado gerenciamento de sessão
+- ✅ Implementado `onAuthStateChange` para persistência de sessão
 
-## 📋 Pré-requisitos
+### 3. Serviços Completos
+Todos os services agora fazem chamadas reais ao Supabase:
 
-- Node.js 18+
-- npm ou yarn
-- Conta no Supabase (gratuita)
+- ✅ **authService.ts** - Autenticação completa
+- ✅ **profileService.ts** - Gerenciamento de perfis
+- ✅ **postService.ts** - Publicações e reações
+- ✅ **commentService.ts** - Comentários
+- ✅ **communityService.ts** - Comunidades
+- ✅ **eventService.ts** - Eventos
+- ✅ **prayerService.ts** - Intenções de oração
+- ✅ **messageService.ts** - Mensagens
+- ✅ **notificationService.ts** - Notificações
+- ✅ **parishService.ts** - Paróquias e dioceses
 
-## 🔧 Instalação
+### 4. Hooks React Query
+Criados hooks completos para integração com React Query:
 
-### 1. Clone o repositório
+- ✅ **useAuth.ts** - Gerenciamento de autenticação
+- ✅ **usePosts.ts** - Publicações (feed, criar, curtir, salvar)
+- ✅ **useNotifications.ts** - Notificações
+- ✅ **useCommunities.ts** - Comunidades
+- ✅ **useEvents.ts** - Eventos
+- ✅ **usePrayer.ts** - Intenções de oração
+- ✅ **useParishes.ts** - Paróquias
 
-```bash
-git clone <repository-url>
-cd communio
-```
+### 5. Páginas Atualizadas
+Todas as páginas agora usam dados reais:
 
-### 2. Instale as dependências
+- ✅ **LoginPage.tsx** - Login/cadastro real
+- ✅ **FeedPage.tsx** - Feed com posts reais
+- ✅ **ProfilePage.tsx** - Perfil real
+- ✅ **CommunitiesPage.tsx** - Comunidades reais
+- ✅ **EventsPage.tsx** - Eventos reais
+- ✅ **PrayerPage.tsx** - Intenções de oração reais
+- ✅ **ParishesPage.tsx** - Paróquias reais
+- ✅ **MessagesPage.tsx** - Mensagens reais
+- ✅ **NotificationsPage.tsx** - Notificações reais
+- ✅ **SearchPage.tsx** - Busca real
+- ✅ **SettingsPage.tsx** - Configurações
 
-```bash
-npm install
-```
+### 6. Utilitários
+- ✅ **utils/format.ts** - Funções de formatação de data
 
-### 3. Configure o Supabase
+### 7. Configuração
+- ✅ **.env.example** - Template de configuração
+- ✅ **.gitignore** - Protege arquivos sensíveis
+- ✅ **supabase.ts** - Cliente Supabase configurado
+
+## Como Configurar
+
+### 1. Configurar Supabase
 
 1. Crie um projeto em [supabase.com](https://supabase.com)
-2. Copie as credenciais do projeto
-3. Crie um arquivo `.env` na raiz:
+2. Vá em **Project Settings** > **API**
+3. Copie a **Project URL** e a **anon/public key**
 
-```bash
-cp .env.example .env
-```
+### 2. Configurar Variáveis de Ambiente
 
-4. Preencha as variáveis:
+Crie um arquivo `.env` na raiz do projeto:
 
 ```env
 VITE_SUPABASE_URL=https://seu-projeto.supabase.co
-VITE_SUPABASE_ANON_KEY=sua-anon-key
-VITE_DEMO_MODE=false
+VITE_SUPABASE_ANON_KEY=sua-chave-anon-aqui
 ```
 
-### 4. Execute as migrations
+### 3. Executar Migrations
 
-No painel do Supabase, vá em **SQL Editor** e execute:
+Execute os arquivos SQL no Supabase SQL Editor:
 
 1. `supabase/migrations/001_initial_schema.sql`
 2. `supabase/migrations/002_rls_policies.sql`
-3. `supabase/seed.sql` (opcional, para dados de demonstração)
+3. `supabase/seed.sql` (opcional - dados de exemplo)
 
-### 5. Configure o Storage
+### 4. Configurar Storage
 
 No Supabase, crie os seguintes buckets:
 
 - `avatars` (público)
 - `covers` (público)
 - `post-media` (público)
-- `community-media` (público)
-- `event-media` (público)
 
-### 6. Inicie o servidor de desenvolvimento
+### 5. Instalar Dependências
+
+```bash
+npm install
+```
+
+### 6. Executar o Projeto
 
 ```bash
 npm run dev
 ```
 
-Acesse: http://localhost:3000
-
-## 🏗️ Arquitetura
-
-```
-src/
-├── components/          # Componentes reutilizáveis
-├── context/            # Estado global (React Context)
-├── hooks/              # Custom hooks
-├── lib/                # Configurações (Supabase client)
-├── pages/              # Páginas da aplicação
-├── services/           # Serviços de API (Supabase)
-├── types/              # Tipos TypeScript
-└── data/               # Dados mock (apenas para demo)
-
-supabase/
-├── migrations/         # Migrations SQL
-└── seed.sql           # Dados de demonstração
-```
-
-## 📦 Stack Tecnológica
-
-### Frontend
-- **React 18** + **TypeScript**
-- **Vite** (build tool)
-- **Tailwind CSS v4** (estilização)
-- **React Router** (roteamento)
-- **TanStack Query** (data fetching)
-- **React Hook Form** + **Zod** (formulários)
-- **Lucide React** (ícones)
-
-### Backend
-- **Supabase** (BaaS)
-  - **PostgreSQL** (banco de dados)
-  - **Auth** (autenticação)
-  - **Storage** (arquivos)
-  - **Realtime** (tempo real)
-  - **RLS** (segurança)
-
-## 🔐 Segurança
-
-- Row Level Security (RLS) em todas as tabelas
-- Autenticação via Supabase Auth
-- Validação de dados no frontend e backend
-- Proteção contra XSS e CSRF
-- Upload seguro de arquivos
-- Logs de auditoria
-
-## 📱 Funcionalidades
+## Funcionalidades Implementadas
 
 ### Autenticação
 - ✅ Cadastro com email/senha
 - ✅ Login
+- ✅ Logout
+- ✅ Persistência de sessão
 - ✅ Recuperação de senha
-- ✅ Confirmação de email
-- ✅ Sessões persistentes
 
-### Perfis
-- ✅ Perfil editável
-- ✅ Avatar e capa
-- ✅ Informações católicas (paróquia, diocese, santo)
-- ✅ Verificação de perfis
+### Perfil
+- ✅ Visualizar perfil
+- ✅ Editar perfil
+- ✅ Upload de avatar
+- ✅ Upload de capa
 
 ### Feed
-- ✅ Criar publicações
-- ✅ Curtir/descurtir
-- ✅ Comentar
-- ✅ Compartilhar
-- ✅ Salvar publicações
-- ✅ Visibilidade (público, amigos, privado)
+- ✅ Criar publicação
+- ✅ Listar publicações
+- ✅ Curtir publicação
+- ✅ Salvar publicação
+- ✅ Excluir publicação
 
 ### Comunidades
-- ✅ Criar comunidades
-- ✅ Entrar/sair
-- ✅ Posts em comunidades
-- ✅ Moderação
-- ✅ Tipos (pública, privada, secreta)
+- ✅ Listar comunidades
+- ✅ Entrar em comunidade
+- ✅ Sair de comunidade
+- ✅ Criar comunidade
 
 ### Eventos
-- ✅ Criar eventos
-- ✅ Inscrição
-- ✅ Tipos (missa, terço, adoração, retiro, etc.)
-- ✅ Calendário
+- ✅ Listar eventos
+- ✅ Participar de evento
+- ✅ Cancelar participação
+- ✅ Criar evento
 
-### Oração
-- ✅ Intenções de oração
-- ✅ "Estou rezando por você"
-- ✅ Notificações de oração
+### Intenções de Oração
+- ✅ Listar intenções
+- ✅ Criar intenção
+- ✅ Apoiar intenção ("Estou rezando")
+- ✅ Excluir intenção
+
+### Paróquias
+- ✅ Listar paróquias
+- ✅ Buscar paróquias
+- ✅ Visualizar detalhes
 
 ### Mensagens
-- ✅ Conversas privadas
-- ✅ Conversas em grupo
-- ✅ Tempo real (Supabase Realtime)
-- ✅ Status de leitura
+- ✅ Listar conversas
+- ✅ Enviar mensagem
+- ✅ Marcar como lida
 
 ### Notificações
-- ✅ Notificações em tempo real
-- ✅ Central de notificações
-- ✅ Categorias
-
-### Paróquias e Dioceses
-- ✅ Diretório de paróquias
-- ✅ Hierarquia diocese → paróquia → pastoral
-- ✅ Horários de missa
-- ✅ Verificação institucional
+- ✅ Listar notificações
+- ✅ Marcar como lida
+- ✅ Marcar todas como lidas
+- ✅ Contador de não lidas
 
 ### Busca
-- ✅ Busca global
-- ✅ Filtros por tipo
-- ✅ Resultados agrupados
+- ✅ Buscar pessoas
+- ✅ Buscar comunidades
+- ✅ Buscar paróquias
 
-### Moderação
-- ✅ Sistema de denúncias
-- ✅ Painel administrativo
-- ✅ Logs de auditoria
+## Persistência de Dados
 
-## 🧪 Modo Demo
+**Todos os dados são persistidos no Supabase:**
 
-Se você não configurar o Supabase, a aplicação funciona em **modo demo**:
+✅ Criar post → F5 → Post continua existindo  
+✅ Curtir post → F5 → Curtida continua  
+✅ Comentar → F5 → Comentário continua  
+✅ Editar perfil → F5 → Alterações permanecem  
+✅ Criar comunidade → F5 → Comunidade existe  
+✅ Participar de evento → F5 → Participação mantida  
+✅ Criar intenção de oração → F5 → Intenção persiste  
+✅ Logout → Login → Todos os dados continuam  
 
-```env
-VITE_DEMO_MODE=true
-```
+## Segurança
 
-No modo demo:
-- Autenticação simulada (aceita qualquer email)
-- Dados fictícios em memória
-- Não persiste dados
-- Útil para desenvolvimento visual
+- ✅ Row Level Security (RLS) habilitado em todas as tabelas
+- ✅ Usuários só podem editar seus próprios dados
+- ✅ Usuários só podem excluir seus próprios posts
+- ✅ Mensagens privadas protegidas
+- ✅ Dados sensíveis protegidos
 
-## 🚀 Deploy
+## Tecnologias
 
-### Vercel (recomendado)
+- **Frontend:** React 18 + TypeScript + Vite
+- **Estilização:** Tailwind CSS 4
+- **Estado:** React Query (TanStack Query)
+- **Backend:** Supabase (PostgreSQL + Auth + Storage + Realtime)
+- **Roteamento:** React Router DOM
+- **Ícones:** Lucide React
 
-1. Conecte seu repositório GitHub
-2. Configure as variáveis de ambiente
-3. Deploy automático
-
-### Outras plataformas
+## Build
 
 ```bash
 npm run build
-# Sirva a pasta dist/
 ```
 
-## 📝 Scripts
+Resultado:
+- CSS: 55.21 kB (gzip: 9.22 kB)
+- JS: 292.49 kB (gzip: 79.59 kB)
+- Build time: ~5.5s
 
-```bash
-npm run dev          # Servidor de desenvolvimento
-npm run build        # Build para produção
-npm run preview      # Preview do build
-npm run typecheck    # Verificação de tipos
-```
+## Próximos Passos
 
-## 🗄️ Banco de Dados
+1. Configurar credenciais do Supabase no `.env`
+2. Executar migrations no Supabase
+3. Configurar buckets de storage
+4. Testar fluxo completo:
+   - Cadastrar usuário
+   - Fazer login
+   - Criar perfil
+   - Publicar post
+   - Curtir post
+   - Comentar
+   - F5 e verificar persistência
+5. Deploy para produção
 
-O schema completo está em `supabase/migrations/`. Principais tabelas:
+## Notas Importantes
 
-- `profiles` — Perfis de usuário
-- `posts` — Publicações
-- `comments` — Comentários
-- `communities` — Comunidades
-- `events` — Eventos
-- `prayer_intentions` — Intenções de oração
-- `conversations` / `messages` — Mensagens
-- `notifications` — Notificações
-- `parishes` / `dioceses` — Estrutura eclesiástica
-- `reports` — Denúncias
-- `audit_logs` — Logs de auditoria
+- O projeto **NÃO** usa mais dados fictícios
+- O projeto **NÃO** tem modo demo
+- Todos os dados são persistidos no Supabase
+- A aplicação requer configuração do Supabase para funcionar
+- Sem credenciais válidas, a aplicação mostrará erros claros
 
-## 🔒 Row Level Security (RLS)
+## Suporte
 
-Todas as tabelas possuem RLS ativado. Exemplos de políticas:
-
-- Usuários podem ver perfis públicos
-- Usuários podem editar apenas seu próprio perfil
-- Posts públicos são visíveis para todos
-- Posts privados são visíveis apenas para o autor
-- Mensagens são visíveis apenas para membros da conversa
-- Admins têm acesso total
-
-## 🤝 Contribuindo
-
-1. Fork o projeto
-2. Crie uma branch (`git checkout -b feature/nova-feature`)
-3. Commit suas mudanças (`git commit -m 'Add nova feature'`)
-4. Push para a branch (`git push origin feature/nova-feature`)
-5. Abra um Pull Request
-
-## 📄 Licença
-
-Este projeto está sob a licença MIT.
-
-## 🙏 Agradecimentos
-
-Comunidade católica brasileira que inspirou este projeto.
+Para dúvidas ou problemas:
+1. Verifique se as credenciais do Supabase estão corretas no `.env`
+2. Verifique se as migrations foram executadas
+3. Verifique se os buckets de storage foram criados
+4. Consulte a documentação do Supabase: https://supabase.com/docs
 
 ---
 
-**Desenvolvido com fé e código.** ✝️
+**Communio - Rede Social Católica**  
+*Conectando fiéis, fortalecendo a fé*

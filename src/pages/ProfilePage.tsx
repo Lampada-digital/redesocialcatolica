@@ -1,22 +1,31 @@
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { users } from '../data/mockData';
+import { profileService } from '../services/profileService';
+import { useQuery } from '@tanstack/react-query';
 import {
   MapPin, Calendar, Heart, Users, BookOpen, Church, Edit3,
-  Camera, Settings, Bookmark, FileText, MessageCircle
+  Camera, Settings, FileText
 } from 'lucide-react';
 
 export default function ProfilePage() {
   const { user } = useApp();
-  const [activeTab, setActiveTab] = useState<'posts' | 'about' | 'friends'>('posts');
+  const [activeTab, setActiveTab] = useState<'posts' | 'about'>('posts');
+
+  // Fetch real profile data
+  const { data: profileData } = useQuery({
+    queryKey: ['profile', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const result = await profileService.getProfile(user.id);
+      return result.profile;
+    },
+    enabled: !!user?.id,
+  });
 
   const tabs = [
-    { id: 'posts' as const, label: 'Publicações', icon: FileText, count: 12 },
+    { id: 'posts' as const, label: 'Publicações', icon: FileText },
     { id: 'about' as const, label: 'Sobre', icon: BookOpen },
-    { id: 'friends' as const, label: 'Amigos', icon: Users, count: user?.friendsCount },
   ];
-
-  const friendSuggestions = users.slice(1, 5);
 
   return (
     <div className="space-y-6 pb-20 lg:pb-6">
@@ -63,15 +72,8 @@ export default function ProfilePage() {
             <p className="text-warm-600 text-sm mt-2 max-w-md leading-relaxed">{user?.bio}</p>
             
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-3 text-sm text-warm-500">
-              <span className="flex items-center gap-1.5">
-                <MapPin size={14} className="text-warm-400" /> {user?.city}, {user?.state}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Church size={14} className="text-warm-400" /> {user?.parish}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Heart size={14} className="text-wine-400" /> {user?.patronSaint}
-              </span>
+              {user?.city && <span className="flex items-center gap-1.5"><MapPin size={14} className="text-warm-400" /> {user.city}, {user.state}</span>}
+              {user?.patronSaint && <span className="flex items-center gap-1.5"><Heart size={14} className="text-wine-400" /> {user.patronSaint}</span>}
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -87,9 +89,9 @@ export default function ProfilePage() {
         {/* Stats */}
         <div className="flex items-center gap-6 sm:gap-8 mt-6 pt-6 border-t border-warm-100">
           {[
-            { label: 'Amigos', value: user?.friendsCount },
-            { label: 'Seguidores', value: user?.followersCount },
-            { label: 'Seguindo', value: user?.followingCount },
+            { label: 'Amigos', value: user?.friendsCount || 0 },
+            { label: 'Seguidores', value: user?.followersCount || 0 },
+            { label: 'Seguindo', value: user?.followingCount || 0 },
           ].map(stat => (
             <div key={stat.label} className="text-center sm:text-left">
               <p className="text-xl font-bold text-navy-800">{stat.value}</p>
@@ -109,9 +111,6 @@ export default function ProfilePage() {
               }`}>
               <tab.icon size={16} />
               {tab.label}
-              {tab.count !== undefined && (
-                <span className="text-xs bg-warm-100 text-warm-600 px-1.5 py-0.5 rounded-md">{tab.count}</span>
-              )}
             </button>
           ))}
         </div>
@@ -131,51 +130,30 @@ export default function ProfilePage() {
             <div className="space-y-6">
               <div>
                 <h3 className="font-semibold text-navy-800 mb-3 text-sm uppercase tracking-wider">Sobre mim</h3>
-                <p className="text-sm text-warm-600 leading-relaxed">{user?.bio}</p>
+                <p className="text-sm text-warm-600 leading-relaxed">{user?.bio || 'Nenhuma biografia adicionada.'}</p>
               </div>
               <div>
                 <h3 className="font-semibold text-navy-800 mb-3 text-sm uppercase tracking-wider">Informações</h3>
                 <div className="space-y-3">
-                  {[
-                    { icon: MapPin, text: `${user?.city}, ${user?.state}, ${user?.country}` },
-                    { icon: Church, text: user?.parish },
-                    { icon: BookOpen, text: user?.diocese },
-                    { icon: Heart, text: `Santo de devoção: ${user?.patronSaint}` },
-                    { icon: Calendar, text: `Membro desde ${new Date(user?.joinedAt || '').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}` },
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center gap-3 text-sm">
-                      <item.icon size={16} className="text-warm-400 flex-shrink-0" />
-                      <span className="text-warm-600">{item.text}</span>
+                  {user?.city && (
+                    <div className="flex items-center gap-3 text-sm">
+                      <MapPin size={16} className="text-warm-400 flex-shrink-0" />
+                      <span className="text-warm-600">{user.city}, {user.state}, {user.country}</span>
                     </div>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <h3 className="font-semibold text-navy-800 mb-3 text-sm uppercase tracking-wider">Interesses</h3>
-                <div className="flex flex-wrap gap-2">
-                  {user?.interests?.map((interest: string) => (
-                    <span key={interest} className="px-3 py-1.5 bg-navy-50 text-navy-700 rounded-full text-xs font-medium">
-                      {interest}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'friends' && (
-            <div className="space-y-4">
-              <h3 className="font-semibold text-navy-800 text-sm uppercase tracking-wider">Amigos em comum</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {friendSuggestions.map(friend => (
-                  <div key={friend.id} className="flex flex-col items-center p-4 rounded-xl bg-warm-50 hover:bg-warm-100 transition-all cursor-pointer">
-                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-navy-200 to-navy-400 flex items-center justify-center text-white font-semibold mb-2">
-                      {friend.name.charAt(0)}
+                  )}
+                  {user?.patronSaint && (
+                    <div className="flex items-center gap-3 text-sm">
+                      <Heart size={16} className="text-warm-400 flex-shrink-0" />
+                      <span className="text-warm-600">Santo de devoção: {user.patronSaint}</span>
                     </div>
-                    <p className="text-sm font-medium text-warm-800 text-center">{friend.name}</p>
-                    <p className="text-xs text-warm-500">{friend.city}</p>
-                  </div>
-                ))}
+                  )}
+                  {user?.joinedAt && (
+                    <div className="flex items-center gap-3 text-sm">
+                      <Calendar size={16} className="text-warm-400 flex-shrink-0" />
+                      <span className="text-warm-600">Membro desde {new Date(user.joinedAt).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
