@@ -4,11 +4,22 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const demoMode = import.meta.env.VITE_DEMO_MODE === 'true';
 
-export const isDemoMode = demoMode || !supabaseUrl || !supabaseAnonKey;
+// Modo demo só é permitido quando explicitamente configurado
+export const isDemoMode = demoMode;
 
-if (!isDemoMode && (!supabaseUrl || !supabaseAnonKey)) {
+// Validação de configuração
+if (!isDemoMode) {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error(
+      '❌ ERRO: Supabase não configurado!\n' +
+      'Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no arquivo .env\n' +
+      'Ou defina VITE_DEMO_MODE=true para desenvolvimento local.'
+    );
+  }
+} else {
   console.warn(
-    '⚠️ Supabase não configurado. Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no .env'
+    '⚠️ MODO DEMO ATIVO: A aplicação está usando dados simulados.\n' +
+    'Para produção, configure o Supabase e defina VITE_DEMO_MODE=false'
   );
 }
 

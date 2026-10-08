@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
+import { useUnreadNotificationsCount } from '../hooks/useNotifications';
 import {
   Home, Users, Church, Calendar, Cross, MessageCircle,
   Search, Bell, Settings, LogOut, Menu, X,
@@ -11,7 +12,8 @@ interface LayoutProps {
 }
 
 export default function Layout({ children }: LayoutProps) {
-  const { user, currentPage, setCurrentPage, logout, unreadNotifications } = useApp();
+  const { user, currentPage, setCurrentPage, logout } = useApp();
+  const { data: unreadNotifications = 0 } = useUnreadNotificationsCount();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [scrolled, setScrolled] = useState(false);
