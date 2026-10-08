@@ -1,9 +1,8 @@
-import { getSupabase } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 import type { Comment } from '../types/database';
 
 export const commentService = {
   async createComment(postId: string, userId: string, content: string, parentId?: string): Promise<{ comment: Comment | null; error: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) return { comment: null, error: 'Supabase não configurado' };
 
     try {
@@ -21,7 +20,6 @@ export const commentService = {
   },
 
   async getComments(postId: string, limit: number = 50): Promise<{ comments: Comment[]; error: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) return { comments: [], error: 'Supabase não configurado' };
 
     try {
@@ -41,7 +39,6 @@ export const commentService = {
   },
 
   async getReplies(commentId: string): Promise<{ replies: Comment[]; error: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) return { replies: [], error: 'Supabase não configurado' };
 
     try {
@@ -59,7 +56,6 @@ export const commentService = {
   },
 
   async updateComment(commentId: string, userId: string, content: string): Promise<{ comment: Comment | null; error: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) return { comment: null, error: 'Supabase não configurado' };
 
     try {
@@ -79,7 +75,6 @@ export const commentService = {
   },
 
   async deleteComment(commentId: string, userId: string): Promise<{ error: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) return { error: 'Supabase não configurado' };
 
     try {
