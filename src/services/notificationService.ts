@@ -1,8 +1,9 @@
-import { supabase } from '../lib/supabase';
+import { getSupabase } from '../lib/supabase';
 import type { Notification, NotificationType } from '../types/database';
 
 export const notificationService = {
   async createNotification(userId: string, type: NotificationType, content: string, fromUserId?: string, entityType?: string, entityId?: string, link?: string): Promise<{ error: string | null }> {
+    const supabase = getSupabase();
     if (!supabase) return { error: null };
     try {
       const { error } = await (supabase as any).from('notifications').insert({ user_id: userId, type, content, from_user_id: fromUserId || null, entity_type: entityType || null, entity_id: entityId || null, link: link || null });
@@ -12,6 +13,7 @@ export const notificationService = {
   },
 
   async getNotifications(userId: string, limit: number = 50): Promise<{ notifications: Notification[]; error: string | null }> {
+    const supabase = getSupabase();
     if (!supabase) return { notifications: [], error: 'Supabase não configurado' };
     try {
       const { data, error } = await (supabase as any).from('notifications').select(`*, from_user:profiles!from_user_id(id, display_name, username, avatar_url)`).eq('user_id', userId).order('created_at', { ascending: false }).limit(limit);
@@ -21,6 +23,7 @@ export const notificationService = {
   },
 
   async getUnreadCount(userId: string): Promise<number> {
+    const supabase = getSupabase();
     if (!supabase) return 0;
     try {
       const { count } = await (supabase as any).from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('is_read', false);
@@ -29,6 +32,7 @@ export const notificationService = {
   },
 
   async markAsRead(notificationId: string, userId: string): Promise<{ error: string | null }> {
+    const supabase = getSupabase();
     if (!supabase) return { error: 'Supabase não configurado' };
     try {
       const { error } = await (supabase as any).from('notifications').update({ is_read: true }).eq('id', notificationId).eq('user_id', userId);
@@ -38,6 +42,7 @@ export const notificationService = {
   },
 
   async markAllAsRead(userId: string): Promise<{ error: string | null }> {
+    const supabase = getSupabase();
     if (!supabase) return { error: 'Supabase não configurado' };
     try {
       const { error } = await (supabase as any).from('notifications').update({ is_read: true }).eq('user_id', userId).eq('is_read', false);
@@ -47,6 +52,7 @@ export const notificationService = {
   },
 
   async deleteNotification(notificationId: string, userId: string): Promise<{ error: string | null }> {
+    const supabase = getSupabase();
     if (!supabase) return { error: 'Supabase não configurado' };
     try {
       const { error } = await (supabase as any).from('notifications').delete().eq('id', notificationId).eq('user_id', userId);
@@ -56,6 +62,7 @@ export const notificationService = {
   },
 
   subscribeToNotifications(userId: string, callback: (notification: Notification) => void) {
+    const supabase = getSupabase();
     if (!supabase) return { unsubscribe: () => {} };
     const subscription = (supabase as any).channel(`notifications:${userId}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` }, (payload: any) => { callback(payload.new); }).subscribe();
     return { unsubscribe: () => { (supabase as any).removeChannel(subscription); } };

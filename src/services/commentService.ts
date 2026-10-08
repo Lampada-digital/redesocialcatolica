@@ -1,25 +1,16 @@
-import { supabase } from '../lib/supabase';
+import { getSupabase } from '../lib/supabase';
 import type { Comment } from '../types/database';
 
 export const commentService = {
   async createComment(postId: string, userId: string, content: string, parentId?: string): Promise<{ comment: Comment | null; error: string | null }> {
-    if (!supabase) {
-      return { comment: null, error: 'Supabase não configurado' };
-    }
+    const supabase = getSupabase();
+    if (!supabase) return { comment: null, error: 'Supabase não configurado' };
 
     try {
       const { data, error } = await (supabase as any)
         .from('comments')
-        .insert({
-          post_id: postId,
-          author_id: userId,
-          content,
-          parent_id: parentId || null,
-        })
-        .select(`
-          *,
-          author:profiles!author_id(id, display_name, username, avatar_url, is_verified)
-        `)
+        .insert({ post_id: postId, author_id: userId, content, parent_id: parentId || null })
+        .select(`*, author:profiles!author_id(id, display_name, username, avatar_url, is_verified)`)
         .single();
 
       if (error) return { comment: null, error: error.message };
@@ -30,17 +21,13 @@ export const commentService = {
   },
 
   async getComments(postId: string, limit: number = 50): Promise<{ comments: Comment[]; error: string | null }> {
-    if (!supabase) {
-      return { comments: [], error: 'Supabase não configurado' };
-    }
+    const supabase = getSupabase();
+    if (!supabase) return { comments: [], error: 'Supabase não configurado' };
 
     try {
       const { data, error } = await (supabase as any)
         .from('comments')
-        .select(`
-          *,
-          author:profiles!author_id(id, display_name, username, avatar_url, is_verified)
-        `)
+        .select(`*, author:profiles!author_id(id, display_name, username, avatar_url, is_verified)`)
         .eq('post_id', postId)
         .is('parent_id', null)
         .order('created_at', { ascending: true })
@@ -54,17 +41,13 @@ export const commentService = {
   },
 
   async getReplies(commentId: string): Promise<{ replies: Comment[]; error: string | null }> {
-    if (!supabase) {
-      return { replies: [], error: 'Supabase não configurado' };
-    }
+    const supabase = getSupabase();
+    if (!supabase) return { replies: [], error: 'Supabase não configurado' };
 
     try {
       const { data, error } = await (supabase as any)
         .from('comments')
-        .select(`
-          *,
-          author:profiles!author_id(id, display_name, username, avatar_url, is_verified)
-        `)
+        .select(`*, author:profiles!author_id(id, display_name, username, avatar_url, is_verified)`)
         .eq('parent_id', commentId)
         .order('created_at', { ascending: true });
 
@@ -76,9 +59,8 @@ export const commentService = {
   },
 
   async updateComment(commentId: string, userId: string, content: string): Promise<{ comment: Comment | null; error: string | null }> {
-    if (!supabase) {
-      return { comment: null, error: 'Supabase não configurado' };
-    }
+    const supabase = getSupabase();
+    if (!supabase) return { comment: null, error: 'Supabase não configurado' };
 
     try {
       const { data, error } = await (supabase as any)
@@ -97,9 +79,8 @@ export const commentService = {
   },
 
   async deleteComment(commentId: string, userId: string): Promise<{ error: string | null }> {
-    if (!supabase) {
-      return { error: 'Supabase não configurado' };
-    }
+    const supabase = getSupabase();
+    if (!supabase) return { error: 'Supabase não configurado' };
 
     try {
       const { error } = await (supabase as any)

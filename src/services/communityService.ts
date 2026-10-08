@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { getSupabase } from '../lib/supabase';
 import type { Community, CommunityType } from '../types/database';
 
 export interface CreateCommunityData {
@@ -11,6 +11,7 @@ export interface CreateCommunityData {
 
 export const communityService = {
   async createCommunity(userId: string, data: CreateCommunityData): Promise<{ community: Community | null; error: string | null }> {
+    const supabase = getSupabase();
     if (!supabase) return { community: null, error: 'Supabase não configurado' };
 
     try {
@@ -29,6 +30,7 @@ export const communityService = {
   },
 
   async getCommunities(limit: number = 50, category?: string): Promise<{ communities: Community[]; error: string | null }> {
+    const supabase = getSupabase();
     if (!supabase) return { communities: [], error: 'Supabase não configurado' };
 
     try {
@@ -43,6 +45,7 @@ export const communityService = {
   },
 
   async getCommunity(slug: string): Promise<{ community: Community | null; error: string | null }> {
+    const supabase = getSupabase();
     if (!supabase) return { community: null, error: 'Supabase não configurado' };
 
     try {
@@ -55,6 +58,7 @@ export const communityService = {
   },
 
   async joinCommunity(communityId: string, userId: string): Promise<{ error: string | null }> {
+    const supabase = getSupabase();
     if (!supabase) return { error: 'Supabase não configurado' };
 
     try {
@@ -67,6 +71,7 @@ export const communityService = {
   },
 
   async leaveCommunity(communityId: string, userId: string): Promise<{ error: string | null }> {
+    const supabase = getSupabase();
     if (!supabase) return { error: 'Supabase não configurado' };
 
     try {
@@ -79,6 +84,7 @@ export const communityService = {
   },
 
   async isMember(communityId: string, userId: string): Promise<boolean> {
+    const supabase = getSupabase();
     if (!supabase) return false;
 
     try {
@@ -90,6 +96,7 @@ export const communityService = {
   },
 
   async getUserCommunities(userId: string): Promise<{ communities: Community[]; error: string | null }> {
+    const supabase = getSupabase();
     if (!supabase) return { communities: [], error: 'Supabase não configurado' };
 
     try {
@@ -103,6 +110,7 @@ export const communityService = {
   },
 
   async updateCommunity(communityId: string, userId: string, data: Partial<CreateCommunityData>): Promise<{ community: Community | null; error: string | null }> {
+    const supabase = getSupabase();
     if (!supabase) return { community: null, error: 'Supabase não configurado' };
 
     try {
