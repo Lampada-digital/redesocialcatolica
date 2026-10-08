@@ -1,6 +1,6 @@
 import { useApp } from '../context/AppContext';
 import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead } from '../hooks/useNotifications';
-import { formatTimeAgo } from '../data/mockData';
+import { formatTimeAgo } from '../utils/format';
 import { Heart, MessageCircle, UserPlus, Users, Calendar, Cross, Bell, Check, Settings } from 'lucide-react';
 
 export default function NotificationsPage() {

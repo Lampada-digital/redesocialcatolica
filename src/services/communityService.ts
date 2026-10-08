@@ -1,4 +1,4 @@
-import { supabase, isDemoMode } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 import type { Community, CommunityType } from '../types/database';
 
 export interface CreateCommunityData {
@@ -11,38 +11,17 @@ export interface CreateCommunityData {
 
 export const communityService = {
   async createCommunity(userId: string, data: CreateCommunityData): Promise<{ community: Community | null; error: string | null }> {
-    if (isDemoMode || !supabase) {
-      return { community: null, error: 'Modo demo: não é possível criar comunidades' };
-    }
+    if (!supabase) return { community: null, error: 'Supabase não configurado' };
 
     try {
       const slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-
       const { data: community, error } = await (supabase as any)
         .from('communities')
-        .insert({
-          name: data.name,
-          slug,
-          description: data.description || null,
-          type: data.type || 'PUBLIC',
-          category: data.category || null,
-          rules: data.rules || null,
-          creator_id: userId,
-        })
-        .select()
-        .single();
+        .insert({ name: data.name, slug, description: data.description || null, type: data.type || 'PUBLIC', category: data.category || null, rules: data.rules || null, creator_id: userId })
+        .select().single();
 
       if (error) return { community: null, error: error.message };
-
-      // Add creator as admin
-      await (supabase as any)
-        .from('community_members')
-        .insert({
-          community_id: community.id,
-          user_id: userId,
-          role: 'ADMIN',
-        });
-
+      await (supabase as any).from('community_members').insert({ community_id: community.id, user_id: userId, role: 'ADMIN' });
       return { community, error: null };
     } catch (err) {
       return { community: null, error: 'Erro ao criar comunidade' };
@@ -50,24 +29,12 @@ export const communityService = {
   },
 
   async getCommunities(limit: number = 50, category?: string): Promise<{ communities: Community[]; error: string | null }> {
-    if (isDemoMode || !supabase) {
-      return { communities: [], error: 'Modo demo: comunidades não disponíveis' };
-    }
+    if (!supabase) return { communities: [], error: 'Supabase não configurado' };
 
     try {
-      let query = (supabase as any)
-        .from('communities')
-        .select('*')
-        .eq('type', 'PUBLIC')
-        .order('members_count', { ascending: false })
-        .limit(limit);
-
-      if (category) {
-        query = query.eq('category', category);
-      }
-
+      let query = (supabase as any).from('communities').select('*').eq('type', 'PUBLIC').order('members_count', { ascending: false }).limit(limit);
+      if (category) query = query.eq('category', category);
       const { data, error } = await query;
-
       if (error) return { communities: [], error: error.message };
       return { communities: data || [], error: null };
     } catch (err) {
@@ -76,17 +43,10 @@ export const communityService = {
   },
 
   async getCommunity(slug: string): Promise<{ community: Community | null; error: string | null }> {
-    if (isDemoMode || !supabase) {
-      return { community: null, error: 'Modo demo: comunidade não disponível' };
-    }
+    if (!supabase) return { community: null, error: 'Supabase não configurado' };
 
     try {
-      const { data, error } = await (supabase as any)
-        .from('communities')
-        .select('*')
-        .eq('slug', slug)
-        .single();
-
+      const { data, error } = await (supabase as any).from('communities').select('*').eq('slug', slug).single();
       if (error) return { community: null, error: error.message };
       return { community: data, error: null };
     } catch (err) {
@@ -95,19 +55,10 @@ export const communityService = {
   },
 
   async joinCommunity(communityId: string, userId: string): Promise<{ error: string | null }> {
-    if (isDemoMode || !supabase) {
-      return { error: 'Modo demo: não é possível entrar' };
-    }
+    if (!supabase) return { error: 'Supabase não configurado' };
 
     try {
-      const { error } = await (supabase as any)
-        .from('community_members')
-        .insert({
-          community_id: communityId,
-          user_id: userId,
-          role: 'MEMBER',
-        });
-
+      const { error } = await (supabase as any).from('community_members').insert({ community_id: communityId, user_id: userId, role: 'MEMBER' });
       if (error) return { error: error.message };
       return { error: null };
     } catch (err) {
@@ -116,17 +67,10 @@ export const communityService = {
   },
 
   async leaveCommunity(communityId: string, userId: string): Promise<{ error: string | null }> {
-    if (isDemoMode || !supabase) {
-      return { error: 'Modo demo: não é possível sair' };
-    }
+    if (!supabase) return { error: 'Supabase não configurado' };
 
     try {
-      const { error } = await (supabase as any)
-        .from('community_members')
-        .delete()
-        .eq('community_id', communityId)
-        .eq('user_id', userId);
-
+      const { error } = await (supabase as any).from('community_members').delete().eq('community_id', communityId).eq('user_id', userId);
       if (error) return { error: error.message };
       return { error: null };
     } catch (err) {
@@ -135,18 +79,10 @@ export const communityService = {
   },
 
   async isMember(communityId: string, userId: string): Promise<boolean> {
-    if (isDemoMode || !supabase) {
-      return false;
-    }
+    if (!supabase) return false;
 
     try {
-      const { data } = await (supabase as any)
-        .from('community_members')
-        .select('id')
-        .eq('community_id', communityId)
-        .eq('user_id', userId)
-        .single();
-
+      const { data } = await (supabase as any).from('community_members').select('id').eq('community_id', communityId).eq('user_id', userId).single();
       return !!data;
     } catch (err) {
       return false;
@@ -154,18 +90,10 @@ export const communityService = {
   },
 
   async getUserCommunities(userId: string): Promise<{ communities: Community[]; error: string | null }> {
-    if (isDemoMode || !supabase) {
-      return { communities: [], error: 'Modo demo: comunidades não disponíveis' };
-    }
+    if (!supabase) return { communities: [], error: 'Supabase não configurado' };
 
     try {
-      const { data, error } = await (supabase as any)
-        .from('community_members')
-        .select(`
-          community:communities(*)
-        `)
-        .eq('user_id', userId);
-
+      const { data, error } = await (supabase as any).from('community_members').select(`community:communities(*)`).eq('user_id', userId);
       if (error) return { communities: [], error: error.message };
       const communities = data?.map((m: any) => m.community) || [];
       return { communities, error: null };
@@ -175,22 +103,10 @@ export const communityService = {
   },
 
   async updateCommunity(communityId: string, userId: string, data: Partial<CreateCommunityData>): Promise<{ community: Community | null; error: string | null }> {
-    if (isDemoMode || !supabase) {
-      return { community: null, error: 'Modo demo: não é possível editar' };
-    }
+    if (!supabase) return { community: null, error: 'Supabase não configurado' };
 
     try {
-      const { data: community, error } = await (supabase as any)
-        .from('communities')
-        .update({
-          ...data,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', communityId)
-        .eq('creator_id', userId)
-        .select()
-        .single();
-
+      const { data: community, error } = await (supabase as any).from('communities').update({ ...data, updated_at: new Date().toISOString() }).eq('id', communityId).eq('creator_id', userId).select().single();
       if (error) return { community: null, error: error.message };
       return { community, error: null };
     } catch (err) {

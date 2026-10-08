@@ -1,19 +1,53 @@
 import { useState } from 'react';
-import { prayerIntentions, formatTimeAgo } from '../data/mockData';
+import { useApp } from '../context/AppContext';
+import { usePrayerIntentions, useCreatePrayerIntention, useSupportPrayer } from '../hooks/usePrayer';
+import { formatTimeAgo } from '../utils/format';
 import { Cross, Heart, Plus, Send } from 'lucide-react';
 
 export default function PrayerPage() {
-  const [intentions, setIntentions] = useState(prayerIntentions);
+  const { user } = useApp();
+  const { data: intentionsData, isLoading } = usePrayerIntentions();
+  const createMutation = useCreatePrayerIntention();
+  const supportMutation = useSupportPrayer();
+
   const [newIntention, setNewIntention] = useState('');
   const [showForm, setShowForm] = useState(false);
 
-  const handlePray = (id: string) => {
-    setIntentions(prev => prev.map(i =>
-      i.id === id ? { ...i, isPraying: !i.isPraying, prayersCount: i.isPraying ? i.prayersCount - 1 : i.prayersCount + 1 } : i
-    ));
+  const intentions = intentionsData?.intentions || [];
+  const totalPrayers = intentions.reduce((acc: number, i: any) => acc + (i.prayers_count || 0), 0);
+
+  const handleCreate = async () => {
+    if (newIntention.trim()) {
+      try {
+        await createMutation.mutateAsync({ content: newIntention });
+        setNewIntention('');
+        setShowForm(false);
+      } catch (error) {
+        console.error('Erro ao criar intenção:', error);
+      }
+    }
   };
 
-  const totalPrayers = intentions.reduce((acc, i) => acc + i.prayersCount, 0);
+  const handleSupport = async (intentionId: string) => {
+    try {
+      await supportMutation.mutateAsync(intentionId);
+    } catch (error) {
+      console.error('Erro ao apoiar intenção:', error);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="h-32 bg-warm-200 rounded-2xl animate-pulse" />
+        <div className="space-y-4">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-32 bg-warm-200 rounded-2xl animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 pb-20 lg:pb-6">
@@ -69,16 +103,9 @@ export default function PrayerPage() {
               rows={3} />
             <div className="flex items-center justify-between">
               <button onClick={() => { setShowForm(false); setNewIntention(''); }} className="px-3 py-1.5 text-sm text-warm-500 hover:text-warm-700">Cancelar</button>
-              <button onClick={() => {
-                if (newIntention.trim()) {
-                  const newInt = { ...intentions[0], id: `prayer-${Date.now()}`, content: newIntention, prayersCount: 1, isPraying: true, createdAt: new Date().toISOString() };
-                  setIntentions(prev => [newInt, ...prev]);
-                  setNewIntention('');
-                  setShowForm(false);
-                }
-              }} disabled={!newIntention.trim()}
+              <button onClick={handleCreate} disabled={!newIntention.trim() || createMutation.isPending}
                 className="flex items-center gap-1.5 px-4 py-2 bg-gold-500 text-white text-sm font-semibold rounded-lg hover:bg-gold-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
-                <Send size={14} /> Publicar
+                {createMutation.isPending ? 'Publicando...' : (<><Send size={14} /> Publicar</>)}
               </button>
             </div>
           </div>
@@ -86,37 +113,48 @@ export default function PrayerPage() {
       </div>
 
       {/* Intentions */}
-      <div className="space-y-4">
-        {intentions.map(intention => (
-          <div key={intention.id} className="bg-white rounded-2xl border border-warm-100 shadow-sm p-5 animate-fade-in">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-navy-200 to-navy-400 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
-                {intention.author.name.charAt(0)}
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-sm text-warm-800">{intention.author.name}</span>
-                  <span className="text-xs text-warm-400">{formatTimeAgo(intention.createdAt)}</span>
-                </div>
-                <p className="text-sm text-warm-600 mt-2 leading-relaxed">{intention.content}</p>
-              </div>
-            </div>
-            <div className="mt-4 pt-4 border-t border-warm-100 flex items-center justify-between">
-              <button onClick={() => handlePray(intention.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
-                  intention.isPraying ? 'bg-gold-100 text-gold-700' : 'bg-warm-100 text-warm-600 hover:bg-gold-50 hover:text-gold-700'
-                }`}>
-                <Cross size={16} />
-                {intention.isPraying ? 'Rezando' : 'Estou rezando por você'}
-              </button>
-              <div className="flex items-center gap-1.5 text-sm text-warm-500">
-                <Heart size={14} className="text-gold-500" />
-                <span>{intention.prayersCount} orações</span>
-              </div>
-            </div>
+      {intentions.length === 0 ? (
+        <div className="text-center py-12 bg-white rounded-2xl border border-warm-100">
+          <div className="w-16 h-16 bg-warm-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Cross size={24} className="text-warm-400" />
           </div>
-        ))}
-      </div>
+          <p className="text-warm-600 font-medium">Nenhuma intenção de oração</p>
+          <p className="text-sm text-warm-400 mt-1">Seja o primeiro a compartilhar uma intenção</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {intentions.map((intention: any) => (
+            <div key={intention.id} className="bg-white rounded-2xl border border-warm-100 shadow-sm p-5 animate-fade-in">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-navy-200 to-navy-400 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
+                  {intention.author?.display_name?.charAt(0) || 'U'}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-sm text-warm-800">{intention.author?.display_name || 'Anônimo'}</span>
+                    <span className="text-xs text-warm-400">{formatTimeAgo(intention.created_at)}</span>
+                  </div>
+                  <p className="text-sm text-warm-600 mt-2 leading-relaxed">{intention.content}</p>
+                </div>
+              </div>
+              <div className="mt-4 pt-4 border-t border-warm-100 flex items-center justify-between">
+                <button onClick={() => handleSupport(intention.id)}
+                  disabled={supportMutation.isPending}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all disabled:opacity-50 ${
+                    'bg-warm-100 text-warm-600 hover:bg-gold-50 hover:text-gold-700'
+                  }`}>
+                  <Cross size={16} />
+                  Estou rezando por você
+                </button>
+                <div className="flex items-center gap-1.5 text-sm text-warm-500">
+                  <Heart size={14} className="text-gold-500" />
+                  <span>{intention.prayers_count || 0} orações</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

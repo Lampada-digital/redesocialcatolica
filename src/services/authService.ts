@@ -1,4 +1,4 @@
-import { supabase, isDemoMode } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 import type { Profile } from '../types/database';
 
 export interface SignUpData {
@@ -19,46 +19,10 @@ export interface AuthUser {
   profile: Profile | null;
 }
 
-// Demo mode fallback
-const DEMO_USER: AuthUser = {
-  id: 'demo-user-id',
-  email: 'demo@communio.app',
-  profile: {
-    id: 'demo-user-id',
-    username: 'mariasilva',
-    display_name: 'Maria Silva',
-    avatar_url: null,
-    cover_url: null,
-    bio: 'Católica apaixonada pela Eucaristia. Membro da Pastoral da Juventude.',
-    city: 'São Paulo',
-    state: 'SP',
-    country: 'Brasil',
-    patron_saint: 'Nossa Senhora Aparecida',
-    parish_id: null,
-    diocese_id: null,
-    is_verified: false,
-    verification_badge: null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-};
-
 export const authService = {
   async signUp(data: SignUpData): Promise<{ user: AuthUser | null; error: string | null }> {
-    if (isDemoMode || !supabase) {
-      // Demo mode: simulate sign up
-      return {
-        user: {
-          ...DEMO_USER,
-          email: data.email,
-          profile: {
-            ...DEMO_USER.profile!,
-            display_name: data.displayName,
-            username: data.username,
-          },
-        },
-        error: null,
-      };
+    if (!supabase) {
+      return { user: null, error: 'Supabase não configurado. Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no arquivo .env' };
     }
 
     try {
@@ -97,9 +61,8 @@ export const authService = {
   },
 
   async signIn(data: SignInData): Promise<{ user: AuthUser | null; error: string | null }> {
-    if (isDemoMode || !supabase) {
-      // Demo mode: simulate sign in
-      return { user: DEMO_USER, error: null };
+    if (!supabase) {
+      return { user: null, error: 'Supabase não configurado. Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no arquivo .env' };
     }
 
     try {
@@ -132,8 +95,8 @@ export const authService = {
   },
 
   async signOut(): Promise<{ error: string | null }> {
-    if (isDemoMode || !supabase) {
-      return { error: null };
+    if (!supabase) {
+      return { error: 'Supabase não configurado' };
     }
 
     try {
@@ -146,7 +109,7 @@ export const authService = {
   },
 
   async getSession(): Promise<{ user: AuthUser | null }> {
-    if (isDemoMode || !supabase) {
+    if (!supabase) {
       return { user: null };
     }
 
@@ -173,8 +136,8 @@ export const authService = {
   },
 
   async resetPassword(email: string): Promise<{ error: string | null }> {
-    if (isDemoMode || !supabase) {
-      return { error: null }; // Demo mode: always succeeds
+    if (!supabase) {
+      return { error: 'Supabase não configurado' };
     }
 
     try {
@@ -187,8 +150,8 @@ export const authService = {
   },
 
   async updatePassword(newPassword: string): Promise<{ error: string | null }> {
-    if (isDemoMode || !supabase) {
-      return { error: null };
+    if (!supabase) {
+      return { error: 'Supabase não configurado' };
     }
 
     try {
@@ -203,7 +166,7 @@ export const authService = {
   },
 
   onAuthStateChange(callback: (user: AuthUser | null) => void): { unsubscribe: () => void } {
-    if (isDemoMode || !supabase) {
+    if (!supabase) {
       return { unsubscribe: () => {} };
     }
 

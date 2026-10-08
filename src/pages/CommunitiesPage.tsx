@@ -1,14 +1,25 @@
 import { useState } from 'react';
-import { communities } from '../data/mockData';
+import { useApp } from '../context/AppContext';
+import { useCommunities, useJoinCommunity, useLeaveCommunity, useUserCommunities } from '../hooks/useCommunities';
 import { Users, Search, Plus, Globe, Lock, EyeOff, TrendingUp } from 'lucide-react';
 
 export default function CommunitiesPage() {
+  const { user } = useApp();
+  const { data: communitiesData, isLoading } = useCommunities();
+  const { data: userCommunitiesData } = useUserCommunities();
+  const joinMutation = useJoinCommunity();
+  const leaveMutation = useLeaveCommunity();
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState<'all' | 'member' | 'explore'>('all');
 
+  const communities = communitiesData?.communities || [];
+  const userCommunityIds = new Set(userCommunitiesData?.communities?.map((c: any) => c.id) || []);
+
   const filtered = communities.filter(c => {
     const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filter === 'all' || (filter === 'member' && c.isMember) || (filter === 'explore' && !c.isMember);
+    const isMember = userCommunityIds.has(c.id);
+    const matchesFilter = filter === 'all' || (filter === 'member' && isMember) || (filter === 'explore' && !isMember);
     return matchesSearch && matchesFilter;
   });
 
@@ -20,6 +31,36 @@ export default function CommunitiesPage() {
       default: return <Globe size={12} />;
     }
   };
+
+  const handleJoin = async (communityId: string) => {
+    try {
+      await joinMutation.mutateAsync(communityId);
+    } catch (error) {
+      console.error('Erro ao entrar na comunidade:', error);
+    }
+  };
+
+  const handleLeave = async (communityId: string) => {
+    try {
+      await leaveMutation.mutateAsync(communityId);
+    } catch (error) {
+      console.error('Erro ao sair da comunidade:', error);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="h-8 w-48 bg-warm-200 rounded animate-pulse" />
+        <div className="h-32 bg-warm-200 rounded-2xl animate-pulse" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="h-40 bg-warm-200 rounded-2xl animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 pb-20 lg:pb-6">
@@ -56,68 +97,58 @@ export default function CommunitiesPage() {
         </div>
       </div>
 
-      {/* Trending */}
-      <div className="bg-gradient-to-r from-navy-50 to-ivory-100 rounded-2xl border border-navy-100 p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <TrendingUp size={16} className="text-navy-600" />
-          <span className="font-semibold text-navy-800 text-sm">Em alta</span>
-        </div>
-        <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
-          {communities.slice(0, 3).map(c => (
-            <div key={c.id} className="flex-shrink-0 flex items-center gap-2.5 bg-white rounded-xl px-3 py-2.5 border border-warm-100 shadow-sm">
-              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-navy-100 to-navy-200 flex items-center justify-center">
-                <Users size={16} className="text-navy-600" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-warm-800">{c.name}</p>
-                <p className="text-[10px] text-warm-500">{c.members.toLocaleString()} membros</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {filtered.map(community => (
-          <div key={community.id} className="bg-white rounded-2xl border border-warm-100 shadow-sm overflow-hidden hover:shadow-md hover:border-navy-200 transition-all cursor-pointer group">
-            <div className="p-5">
-              <div className="flex items-start gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-navy-100 to-navy-200 flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <Users size={20} className="text-navy-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <h3 className="font-semibold text-warm-800 text-sm truncate">{community.name}</h3>
-                    {typeIcon(community.type)}
-                  </div>
-                  <p className="text-xs text-warm-500 mt-0.5">{community.members.toLocaleString()} membros · {community.category}</p>
-                </div>
-              </div>
-              <p className="text-sm text-warm-600 mt-3 line-clamp-2 leading-relaxed">{community.description}</p>
-              <div className="mt-4 flex items-center justify-between">
-                {community.isMember ? (
-                  <span className="flex items-center gap-1.5 px-3 py-1.5 bg-navy-50 text-navy-700 text-xs font-semibold rounded-lg">
-                    ✓ Membro
-                  </span>
-                ) : (
-                  <button className="px-4 py-1.5 bg-navy-700 text-white text-xs font-semibold rounded-lg hover:bg-navy-800 transition-all">
-                    Participar
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {filtered.length === 0 && (
+      {filtered.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-2xl border border-warm-100">
           <div className="w-16 h-16 bg-warm-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Users size={24} className="text-warm-400" />
           </div>
           <p className="text-warm-600 font-medium">Nenhuma comunidade encontrada</p>
           <p className="text-sm text-warm-400 mt-1">Tente alterar os filtros de busca</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {filtered.map(community => {
+            const isMember = userCommunityIds.has(community.id);
+            return (
+              <div key={community.id} className="bg-white rounded-2xl border border-warm-100 shadow-sm overflow-hidden hover:shadow-md hover:border-navy-200 transition-all cursor-pointer group">
+                <div className="p-5">
+                  <div className="flex items-start gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-navy-100 to-navy-200 flex items-center justify-center group-hover:scale-105 transition-transform">
+                      <Users size={20} className="text-navy-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <h3 className="font-semibold text-warm-800 text-sm truncate">{community.name}</h3>
+                        {typeIcon(community.type)}
+                      </div>
+                      <p className="text-xs text-warm-500 mt-0.5">{community.members_count?.toLocaleString() || 0} membros · {community.category}</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-warm-600 mt-3 line-clamp-2 leading-relaxed">{community.description}</p>
+                  <div className="mt-4 flex items-center justify-between">
+                    {isMember ? (
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleLeave(community.id); }}
+                        disabled={leaveMutation.isPending}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-warm-100 text-warm-700 text-xs font-semibold rounded-lg hover:bg-warm-200 transition-all disabled:opacity-50"
+                      >
+                        {leaveMutation.isPending ? 'Saindo...' : '✓ Membro'}
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleJoin(community.id); }}
+                        disabled={joinMutation.isPending}
+                        className="px-4 py-1.5 bg-navy-700 text-white text-xs font-semibold rounded-lg hover:bg-navy-800 transition-all disabled:opacity-50"
+                      >
+                        {joinMutation.isPending ? 'Entrando...' : 'Participar'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
