@@ -1,4 +1,4 @@
-import { getSupabase } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 import type { Profile } from '../types/database';
 
 export interface SignUpData {
@@ -21,9 +21,8 @@ export interface AuthUser {
 
 export const authService = {
   async signUp(data: SignUpData): Promise<{ user: AuthUser | null; error: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) {
-      return { user: null, error: 'Supabase não configurado. Por favor, configure suas credenciais.' };
+      return { user: null, error: 'Supabase não configurado. Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.' };
     }
 
     try {
@@ -62,9 +61,8 @@ export const authService = {
   },
 
   async signIn(data: SignInData): Promise<{ user: AuthUser | null; error: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) {
-      return { user: null, error: 'Supabase não configurado. Por favor, configure suas credenciais.' };
+      return { user: null, error: 'Supabase não configurado. Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.' };
     }
 
     try {
@@ -97,7 +95,6 @@ export const authService = {
   },
 
   async signOut(): Promise<{ error: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) {
       return { error: 'Supabase não configurado' };
     }
@@ -112,7 +109,6 @@ export const authService = {
   },
 
   async getSession(): Promise<{ user: AuthUser | null }> {
-    const supabase = getSupabase();
     if (!supabase) {
       return { user: null };
     }
@@ -140,7 +136,6 @@ export const authService = {
   },
 
   async resetPassword(email: string): Promise<{ error: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) {
       return { error: 'Supabase não configurado' };
     }
@@ -155,7 +150,6 @@ export const authService = {
   },
 
   async updatePassword(newPassword: string): Promise<{ error: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) {
       return { error: 'Supabase não configurado' };
     }
@@ -172,14 +166,14 @@ export const authService = {
   },
 
   onAuthStateChange(callback: (user: AuthUser | null) => void): { unsubscribe: () => void } {
-    const supabase = getSupabase();
     if (!supabase) {
       return { unsubscribe: () => {} };
     }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const supa = supabase;
+    const { data: { subscription } } = supa.auth.onAuthStateChange(async (event: string, session: any) => {
       if (event === 'SIGNED_IN' && session?.user) {
-        const { data: profile } = await supabase
+        const { data: profile } = await supa
           .from('profiles')
           .select('*')
           .eq('id', session.user.id)

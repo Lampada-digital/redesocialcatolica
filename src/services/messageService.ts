@@ -1,9 +1,8 @@
-import { getSupabase } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 import type { Conversation, Message } from '../types/database';
 
 export const messageService = {
   async createConversation(userId: string, participantIds: string[], isGroup: boolean = false, groupName?: string): Promise<{ conversation: Conversation | null; error: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) return { conversation: null, error: 'Supabase não configurado' };
     try {
       const { data: conversation, error } = await (supabase as any).from('conversations').insert({ is_group: isGroup, group_name: groupName || null }).select().single();
@@ -15,7 +14,6 @@ export const messageService = {
   },
 
   async getConversations(userId: string): Promise<{ conversations: Conversation[]; error: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) return { conversations: [], error: 'Supabase não configurado' };
     try {
       const { data, error } = await (supabase as any).from('conversation_members').select(`conversation:conversations(*), last_read_at`).eq('user_id', userId).order('conversation(last_message_at)', { ascending: false });
@@ -26,7 +24,6 @@ export const messageService = {
   },
 
   async sendMessage(conversationId: string, userId: string, content: string): Promise<{ message: Message | null; error: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) return { message: null, error: 'Supabase não configurado' };
     try {
       const { data, error } = await (supabase as any).from('messages').insert({ conversation_id: conversationId, sender_id: userId, content }).select().single();
@@ -36,7 +33,6 @@ export const messageService = {
   },
 
   async getMessages(conversationId: string, limit: number = 50, cursor?: string): Promise<{ messages: Message[]; error: string | null; nextCursor?: string }> {
-    const supabase = getSupabase();
     if (!supabase) return { messages: [], error: 'Supabase não configurado' };
     try {
       let query = (supabase as any).from('messages').select(`*, sender:profiles!sender_id(id, display_name, username, avatar_url)`).eq('conversation_id', conversationId).order('created_at', { ascending: false }).limit(limit);
@@ -50,7 +46,6 @@ export const messageService = {
   },
 
   async markAsRead(conversationId: string, userId: string): Promise<{ error: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) return { error: 'Supabase não configurado' };
     try {
       const { error } = await (supabase as any).from('conversation_members').update({ last_read_at: new Date().toISOString() }).eq('conversation_id', conversationId).eq('user_id', userId);
@@ -60,7 +55,6 @@ export const messageService = {
   },
 
   async getUnreadCount(conversationId: string, userId: string): Promise<number> {
-    const supabase = getSupabase();
     if (!supabase) return 0;
     try {
       const { data: member } = await (supabase as any).from('conversation_members').select('last_read_at').eq('conversation_id', conversationId).eq('user_id', userId).single();
@@ -71,7 +65,6 @@ export const messageService = {
   },
 
   subscribeToMessages(conversationId: string, callback: (message: Message) => void) {
-    const supabase = getSupabase();
     if (!supabase) return { unsubscribe: () => {} };
     const subscription = (supabase as any).channel(`messages:${conversationId}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` }, (payload: any) => { callback(payload.new); }).subscribe();
     return { unsubscribe: () => { (supabase as any).removeChannel(subscription); } };

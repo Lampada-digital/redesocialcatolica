@@ -1,4 +1,4 @@
-import { getSupabase } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 import type { Event, EventType, EventAttendeeStatus } from '../types/database';
 
 export interface CreateEventData {
@@ -17,7 +17,6 @@ export interface CreateEventData {
 
 export const eventService = {
   async createEvent(userId: string, data: CreateEventData): Promise<{ event: Event | null; error: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) return { event: null, error: 'Supabase não configurado' };
     try {
       const slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + Date.now();
@@ -33,7 +32,6 @@ export const eventService = {
   },
 
   async getEvents(limit: number = 50, type?: EventType): Promise<{ events: Event[]; error: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) return { events: [], error: 'Supabase não configurado' };
     try {
       let query = (supabase as any).from('events').select('*').gte('start_at', new Date().toISOString()).order('start_at', { ascending: true }).limit(limit);
@@ -45,7 +43,6 @@ export const eventService = {
   },
 
   async getEvent(slug: string): Promise<{ event: Event | null; error: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) return { event: null, error: 'Supabase não configurado' };
     try {
       const { data, error } = await (supabase as any).from('events').select('*').eq('slug', slug).single();
@@ -55,7 +52,6 @@ export const eventService = {
   },
 
   async attendEvent(eventId: string, userId: string, status: EventAttendeeStatus = 'GOING'): Promise<{ error: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) return { error: 'Supabase não configurado' };
     try {
       const { error } = await (supabase as any).from('event_attendees').upsert({ event_id: eventId, user_id: userId, status }).eq('event_id', eventId).eq('user_id', userId);
@@ -65,7 +61,6 @@ export const eventService = {
   },
 
   async cancelAttendance(eventId: string, userId: string): Promise<{ error: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) return { error: 'Supabase não configurado' };
     try {
       const { error } = await (supabase as any).from('event_attendees').delete().eq('event_id', eventId).eq('user_id', userId);
@@ -75,7 +70,6 @@ export const eventService = {
   },
 
   async isAttending(eventId: string, userId: string): Promise<{ attending: boolean; status: EventAttendeeStatus | null }> {
-    const supabase = getSupabase();
     if (!supabase) return { attending: false, status: null };
     try {
       const { data } = await (supabase as any).from('event_attendees').select('status').eq('event_id', eventId).eq('user_id', userId).single();
@@ -84,7 +78,6 @@ export const eventService = {
   },
 
   async deleteEvent(eventId: string, userId: string): Promise<{ error: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) return { error: 'Supabase não configurado' };
     try {
       const { error } = await (supabase as any).from('events').delete().eq('id', eventId).eq('organizer_id', userId);
