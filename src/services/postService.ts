@@ -1,4 +1,4 @@
-import { getSupabase } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 import type { Post, PostVisibility } from '../types/database';
 
 export interface CreatePostData {
@@ -19,7 +19,6 @@ export interface PostWithAuthor extends Omit<Post, 'author'> {
 
 export const postService = {
   async createPost(userId: string, data: CreatePostData): Promise<{ post: Post | null; error: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) return { post: null, error: 'Supabase não configurado' };
 
     try {
@@ -42,7 +41,6 @@ export const postService = {
   },
 
   async getFeed(userId: string, cursor?: string, limit: number = 20): Promise<{ posts: PostWithAuthor[]; error: string | null; nextCursor?: string }> {
-    const supabase = getSupabase();
     if (!supabase) return { posts: [], error: 'Supabase não configurado' };
 
     try {
@@ -66,7 +64,6 @@ export const postService = {
   },
 
   async getPost(postId: string): Promise<{ post: PostWithAuthor | null; error: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) return { post: null, error: 'Supabase não configurado' };
 
     try {
@@ -84,7 +81,6 @@ export const postService = {
   },
 
   async updatePost(postId: string, userId: string, content: string): Promise<{ post: Post | null; error: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) return { post: null, error: 'Supabase não configurado' };
 
     try {
@@ -104,7 +100,6 @@ export const postService = {
   },
 
   async deletePost(postId: string, userId: string): Promise<{ error: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) return { error: 'Supabase não configurado' };
 
     try {
@@ -122,7 +117,6 @@ export const postService = {
   },
 
   async toggleReaction(postId: string, userId: string, reactionType: string = 'LIKE'): Promise<{ reacted: boolean; error: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) return { reacted: false, error: 'Supabase não configurado' };
 
     try {
@@ -156,7 +150,6 @@ export const postService = {
   },
 
   async getUserReaction(postId: string, userId: string): Promise<{ reacted: boolean; reactionType: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) return { reacted: false, reactionType: null };
 
     try {
@@ -174,7 +167,6 @@ export const postService = {
   },
 
   async toggleSave(postId: string, userId: string): Promise<{ saved: boolean; error: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) return { saved: false, error: 'Supabase não configurado' };
 
     try {
@@ -207,7 +199,6 @@ export const postService = {
   },
 
   async isPostSaved(postId: string, userId: string): Promise<boolean> {
-    const supabase = getSupabase();
     if (!supabase) return false;
 
     try {
