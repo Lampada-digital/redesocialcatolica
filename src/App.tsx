@@ -1,6 +1,7 @@
 import { AppProvider, useApp } from './context/AppContext';
 import Layout from './components/Layout';
 import LoginPage from './pages/LoginPage';
+import SetupPage from './pages/SetupPage';
 import FeedPage from './pages/FeedPage';
 import ProfilePage from './pages/ProfilePage';
 import CommunitiesPage from './pages/CommunitiesPage';
@@ -11,9 +12,16 @@ import PrayerPage from './pages/PrayerPage';
 import ParishesPage from './pages/ParishesPage';
 import SearchPage from './pages/SearchPage';
 import SettingsPage from './pages/SettingsPage';
+import { getSupabase } from './lib/supabase';
 
 function AppContent() {
   const { isAuthenticated, currentPage } = useApp();
+
+  // Verificar se o Supabase está configurado dinamicamente
+  const supabase = getSupabase();
+  if (!supabase) {
+    return <SetupPage />;
+  }
 
   if (!isAuthenticated) {
     return <LoginPage />;

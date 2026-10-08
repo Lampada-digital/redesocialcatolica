@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { getSupabase } from '../lib/supabase';
 import type { Profile } from '../types/database';
 
 export interface UpdateProfileData {
@@ -17,6 +17,7 @@ export interface UpdateProfileData {
 
 export const profileService = {
   async getProfile(userId: string): Promise<{ profile: Profile | null; error: string | null }> {
+    const supabase = getSupabase();
     if (!supabase) return { profile: null, error: 'Supabase não configurado' };
     try {
       const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
@@ -26,6 +27,7 @@ export const profileService = {
   },
 
   async getProfileByUsername(username: string): Promise<{ profile: Profile | null; error: string | null }> {
+    const supabase = getSupabase();
     if (!supabase) return { profile: null, error: 'Supabase não configurado' };
     try {
       const { data, error } = await supabase.from('profiles').select('*').eq('username', username).single();
@@ -35,6 +37,7 @@ export const profileService = {
   },
 
   async updateProfile(userId: string, data: UpdateProfileData): Promise<{ profile: Profile | null; error: string | null }> {
+    const supabase = getSupabase();
     if (!supabase) return { profile: null, error: 'Supabase não configurado' };
     try {
       const updateData = { ...data, updated_at: new Date().toISOString() };
@@ -45,6 +48,7 @@ export const profileService = {
   },
 
   async checkUsernameAvailable(username: string): Promise<{ available: boolean; error: string | null }> {
+    const supabase = getSupabase();
     if (!supabase) return { available: true, error: null };
     try {
       const { data, error } = await supabase.from('profiles').select('id').eq('username', username).limit(1);
@@ -54,6 +58,7 @@ export const profileService = {
   },
 
   async uploadAvatar(userId: string, file: File): Promise<{ url: string | null; error: string | null }> {
+    const supabase = getSupabase();
     if (!supabase) return { url: null, error: 'Supabase não configurado' };
     try {
       const fileExt = file.name.split('.').pop();
@@ -67,6 +72,7 @@ export const profileService = {
   },
 
   async uploadCover(userId: string, file: File): Promise<{ url: string | null; error: string | null }> {
+    const supabase = getSupabase();
     if (!supabase) return { url: null, error: 'Supabase não configurado' };
     try {
       const fileExt = file.name.split('.').pop();
@@ -80,6 +86,7 @@ export const profileService = {
   },
 
   async searchProfiles(query: string, limit: number = 20): Promise<{ profiles: Profile[]; error: string | null }> {
+    const supabase = getSupabase();
     if (!supabase) return { profiles: [], error: 'Supabase não configurado' };
     try {
       const { data, error } = await supabase.from('profiles').select('*').or(`display_name.ilike.%${query}%,username.ilike.%${query}%`).limit(limit);

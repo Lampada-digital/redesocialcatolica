@@ -1,8 +1,9 @@
-import { supabase } from '../lib/supabase';
+import { getSupabase } from '../lib/supabase';
 import type { Parish, Diocese, Pastoral } from '../types/database';
 
 export const parishService = {
   async getParishes(limit: number = 50, dioceseId?: string): Promise<{ parishes: Parish[]; error: string | null }> {
+    const supabase = getSupabase();
     if (!supabase) return { parishes: [], error: 'Supabase não configurado' };
     try {
       let query = (supabase as any).from('parishes').select(`*, diocese:dioceses!diocese_id(id, name)`).order('name').limit(limit);
@@ -14,6 +15,7 @@ export const parishService = {
   },
 
   async getParish(slug: string): Promise<{ parish: Parish | null; error: string | null }> {
+    const supabase = getSupabase();
     if (!supabase) return { parish: null, error: 'Supabase não configurado' };
     try {
       const { data, error } = await (supabase as any).from('parishes').select(`*, diocese:dioceses!diocese_id(id, name, slug), pastorals(*)`).eq('slug', slug).single();
@@ -23,6 +25,7 @@ export const parishService = {
   },
 
   async getDioceses(limit: number = 50): Promise<{ dioceses: Diocese[]; error: string | null }> {
+    const supabase = getSupabase();
     if (!supabase) return { dioceses: [], error: 'Supabase não configurado' };
     try {
       const { data, error } = await (supabase as any).from('dioceses').select('*').order('name').limit(limit);
@@ -32,6 +35,7 @@ export const parishService = {
   },
 
   async getDiocese(slug: string): Promise<{ diocese: Diocese | null; error: string | null }> {
+    const supabase = getSupabase();
     if (!supabase) return { diocese: null, error: 'Supabase não configurado' };
     try {
       const { data, error } = await (supabase as any).from('dioceses').select('*').eq('slug', slug).single();
@@ -41,6 +45,7 @@ export const parishService = {
   },
 
   async getPastorals(parishId: string): Promise<{ pastorals: Pastoral[]; error: string | null }> {
+    const supabase = getSupabase();
     if (!supabase) return { pastorals: [], error: 'Supabase não configurado' };
     try {
       const { data, error } = await (supabase as any).from('pastorals').select('*').eq('parish_id', parishId).order('name');
@@ -50,6 +55,7 @@ export const parishService = {
   },
 
   async searchParishes(query: string, limit: number = 20): Promise<{ parishes: Parish[]; error: string | null }> {
+    const supabase = getSupabase();
     if (!supabase) return { parishes: [], error: 'Supabase não configurado' };
     try {
       const { data, error } = await (supabase as any).from('parishes').select(`*, diocese:dioceses!diocese_id(id, name)`).or(`name.ilike.%${query}%,city.ilike.%${query}%`).limit(limit);
