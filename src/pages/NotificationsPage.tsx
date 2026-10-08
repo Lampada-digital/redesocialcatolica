@@ -1,10 +1,15 @@
 import { useApp } from '../context/AppContext';
+import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead } from '../hooks/useNotifications';
 import { formatTimeAgo } from '../data/mockData';
 import { Heart, MessageCircle, UserPlus, Users, Calendar, Cross, Bell, Check, Settings } from 'lucide-react';
 
 export default function NotificationsPage() {
-  const { notifications, markNotificationRead, markAllNotificationsRead } = useApp();
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const { data: notificationsData, isLoading } = useNotifications();
+  const markReadMutation = useMarkNotificationRead();
+  const markAllReadMutation = useMarkAllNotificationsRead();
+
+  const notifications = (notificationsData?.notifications || []) as any[];
+  const unreadCount = notifications.filter((n: any) => !n.is_read).length;
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -32,6 +37,35 @@ export default function NotificationsPage() {
     }
   };
 
+  const handleMarkRead = async (id: string) => {
+    try {
+      await markReadMutation.mutateAsync(id);
+    } catch (error) {
+      console.error('Erro ao marcar notificação como lida:', error);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      await markAllReadMutation.mutateAsync();
+    } catch (error) {
+      console.error('Erro ao marcar todas como lidas:', error);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="h-8 w-48 bg-warm-200 rounded animate-pulse" />
+        <div className="space-y-3">
+          {[1, 2, 3, 4, 5].map(i => (
+            <div key={i} className="h-20 bg-warm-200 rounded-2xl animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 pb-20 lg:pb-6">
       <div className="flex items-center justify-between">
@@ -41,7 +75,11 @@ export default function NotificationsPage() {
         </div>
         <div className="flex items-center gap-2">
           {unreadCount > 0 && (
-            <button onClick={markAllNotificationsRead} className="flex items-center gap-1.5 px-3 py-2 text-sm text-navy-600 hover:bg-navy-50 rounded-lg font-medium transition-all">
+            <button 
+              onClick={handleMarkAllRead}
+              disabled={markAllReadMutation.isPending}
+              className="flex items-center gap-1.5 px-3 py-2 text-sm text-navy-600 hover:bg-navy-50 rounded-lg font-medium transition-all disabled:opacity-50"
+            >
               <Check size={14} /> Marcar todas como lidas
             </button>
           )}
@@ -61,19 +99,26 @@ export default function NotificationsPage() {
         ) : (
           <div className="divide-y divide-warm-50">
             {notifications.map(notif => (
-              <button key={notif.id} onClick={() => markNotificationRead(notif.id)}
-                className={`w-full flex items-center gap-3 px-5 py-4 hover:bg-warm-50 transition-all text-left ${!notif.read ? 'bg-navy-50/30' : ''}`}>
+              <button 
+                key={notif.id} 
+                onClick={() => handleMarkRead(notif.id)}
+                disabled={markReadMutation.isPending}
+                className={`w-full flex items-center gap-3 px-5 py-4 hover:bg-warm-50 transition-all text-left disabled:opacity-50 ${!notif.is_read ? 'bg-navy-50/30' : ''}`}
+              >
                 <div className={`w-9 h-9 rounded-full flex items-center justify-center ${getBg(notif.type)}`}>
                   {getIcon(notif.type)}
                 </div>
                 <div className="w-9 h-9 rounded-full bg-gradient-to-br from-navy-200 to-navy-400 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
-                  {notif.from.name.charAt(0)}
+                  {notif.from_user?.display_name?.charAt(0) || '?'}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-warm-700"><span className="font-semibold text-warm-800">{notif.from.name}</span> {notif.content}</p>
-                  <p className="text-xs text-warm-400 mt-0.5">{formatTimeAgo(notif.createdAt)}</p>
+                  <p className="text-sm text-warm-700">
+                    <span className="font-semibold text-warm-800">{notif.from_user?.display_name || 'Sistema'}</span>{' '}
+                    {notif.content}
+                  </p>
+                  <p className="text-xs text-warm-400 mt-0.5">{formatTimeAgo(notif.created_at)}</p>
                 </div>
-                {!notif.read && <div className="w-2 h-2 bg-navy-600 rounded-full flex-shrink-0" />}
+                {!notif.is_read && <div className="w-2 h-2 bg-navy-600 rounded-full flex-shrink-0" />}
               </button>
             ))}
           </div>

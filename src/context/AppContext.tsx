@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { notifications as mockNotifications, posts as mockPosts, type Notification, type Post } from '../data/mockData';
 import type { Profile } from '../types/database';
 
 // Convert Profile to User format for compatibility
@@ -32,8 +31,6 @@ interface AppState {
   isAuthenticated: boolean;
   user: any | null;
   currentPage: string;
-  notifications: Notification[];
-  posts: Post[];
   darkMode: boolean;
 }
 
@@ -43,11 +40,6 @@ interface AppContextType extends AppState {
   logout: () => Promise<void>;
   setCurrentPage: (page: string) => void;
   toggleDarkMode: () => void;
-  markNotificationRead: (id: string) => void;
-  markAllNotificationsRead: () => void;
-  likePost: (id: string) => void;
-  addPost: (content: string) => void;
-  unreadNotifications: number;
   authError: string | null;
   authLoading: boolean;
 }
@@ -61,8 +53,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     isAuthenticated: false,
     user: null,
     currentPage: 'feed',
-    notifications: mockNotifications,
-    posts: mockPosts,
     darkMode: false,
   });
 
@@ -104,50 +94,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setState(prev => ({ ...prev, darkMode: !prev.darkMode }));
   }, []);
 
-  const markNotificationRead = useCallback((id: string) => {
-    setState(prev => ({
-      ...prev,
-      notifications: prev.notifications.map(n =>
-        n.id === id ? { ...n, read: true } : n
-      ),
-    }));
-  }, []);
-
-  const markAllNotificationsRead = useCallback(() => {
-    setState(prev => ({
-      ...prev,
-      notifications: prev.notifications.map(n => ({ ...n, read: true })),
-    }));
-  }, []);
-
-  const likePost = useCallback((id: string) => {
-    setState(prev => ({
-      ...prev,
-      posts: prev.posts.map(p =>
-        p.id === id
-          ? { ...p, liked: !p.liked, likes: p.liked ? p.likes - 1 : p.likes + 1 }
-          : p
-      ),
-    }));
-  }, []);
-
-  const addPost = useCallback((content: string) => {
-    if (!state.user) return;
-    const newPost: Post = {
-      id: `post-${Date.now()}`,
-      author: state.user,
-      content,
-      likes: 0,
-      comments: 0,
-      shares: 0,
-      visibility: 'PUBLIC',
-      createdAt: new Date().toISOString(),
-    };
-    setState(prev => ({ ...prev, posts: [newPost, ...prev.posts] }));
-  }, [state.user]);
-
-  const unreadNotifications = state.notifications.filter(n => !n.read).length;
-
   return (
     <AppContext.Provider
       value={{
@@ -157,11 +103,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
         logout,
         setCurrentPage,
         toggleDarkMode,
-        markNotificationRead,
-        markAllNotificationsRead,
-        likePost,
-        addPost,
-        unreadNotifications,
         authError,
         authLoading,
       }}
