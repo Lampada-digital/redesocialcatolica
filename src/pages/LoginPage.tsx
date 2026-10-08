@@ -3,29 +3,50 @@ import { useApp } from '../context/AppContext';
 import { Cross, Eye, EyeOff, Mail, Lock, User, BookOpen, Heart, Users } from 'lucide-react';
 
 export default function LoginPage() {
-  const { login } = useApp();
+  const { login, register, authError, authLoading } = useApp();
   const [isRegister, setIsRegister] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
+
     if (!email || !password) {
       setError('Preencha todos os campos');
+      setLoading(false);
       return;
     }
-    if (isRegister && !name) {
-      setError('Preencha seu nome');
-      return;
+
+    if (isRegister) {
+      if (!name) {
+        setError('Preencha seu nome');
+        setLoading(false);
+        return;
+      }
+      if (!username) {
+        setError('Preencha seu username');
+        setLoading(false);
+        return;
+      }
+      const success = await register(email, password, name, username);
+      if (!success) {
+        setError(authError || 'Erro ao criar conta');
+      }
+    } else {
+      const success = await login(email, password);
+      if (!success) {
+        setError(authError || 'Credenciais inválidas');
+      }
     }
-    const success = login(email, password);
-    if (!success) {
-      setError('Credenciais inválidas');
-    }
+
+    setLoading(false);
   };
 
   return (
@@ -184,9 +205,10 @@ export default function LoginPage() {
 
               <button
                 type="submit"
-                className="w-full py-3 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold rounded-xl hover:from-primary-700 hover:to-primary-800 transition-all shadow-lg shadow-primary-200 active:scale-[0.98]"
+                disabled={loading}
+                className="w-full py-3 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold rounded-xl hover:from-primary-700 hover:to-primary-800 transition-all shadow-lg shadow-primary-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isRegister ? 'Criar conta' : 'Entrar'}
+                {loading ? 'Processando...' : (isRegister ? 'Criar conta' : 'Entrar')}
               </button>
             </form>
 
