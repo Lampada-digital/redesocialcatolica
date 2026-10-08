@@ -3,170 +3,158 @@ import { useApp } from '../context/AppContext';
 import { users } from '../data/mockData';
 import {
   MapPin, Calendar, Heart, Users, BookOpen, Church, Edit3,
-  Camera, Settings, Grid, Bookmark, FileText
+  Camera, Settings, Bookmark, FileText, MessageCircle
 } from 'lucide-react';
 
 export default function ProfilePage() {
   const { user } = useApp();
-  const [activeTab, setActiveTab] = useState<'posts' | 'about' | 'friends' | 'saved'>('posts');
+  const [activeTab, setActiveTab] = useState<'posts' | 'about' | 'friends'>('posts');
 
   const tabs = [
-    { id: 'posts' as const, label: 'Publicações', icon: FileText },
+    { id: 'posts' as const, label: 'Publicações', icon: FileText, count: 12 },
     { id: 'about' as const, label: 'Sobre', icon: BookOpen },
-    { id: 'friends' as const, label: 'Amigos', icon: Users },
-    { id: 'saved' as const, label: 'Salvos', icon: Bookmark },
+    { id: 'friends' as const, label: 'Amigos', icon: Users, count: user?.friendsCount },
   ];
 
   const friendSuggestions = users.slice(1, 5);
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 pb-20 lg:pb-6">
-      {/* Cover Photo */}
+    <div className="space-y-6 pb-20 lg:pb-6">
+      {/* Cover + Avatar */}
       <div className="relative">
-        <div className="h-48 sm:h-64 bg-gradient-to-br from-primary-400 via-primary-600 to-primary-800 rounded-2xl overflow-hidden">
-          <div className="absolute inset-0 opacity-20">
-            <div className="absolute top-10 left-10 w-32 h-32 rounded-full bg-white/30 blur-2xl" />
-            <div className="absolute bottom-10 right-10 w-40 h-40 rounded-full bg-gold-400/30 blur-2xl" />
+        <div className="h-48 sm:h-56 bg-gradient-to-br from-navy-600 via-navy-700 to-navy-900 rounded-2xl overflow-hidden relative">
+          <div className="absolute inset-0 opacity-30">
+            <div className="absolute top-10 left-10 w-40 h-40 rounded-full bg-gold-400/20 blur-3xl" />
+            <div className="absolute bottom-10 right-10 w-48 h-48 rounded-full bg-navy-400/20 blur-3xl" />
           </div>
-          <button className="absolute top-4 right-4 p-2 bg-black/30 backdrop-blur-sm rounded-lg text-white hover:bg-black/50">
-            <Camera size={18} />
+          <div className="absolute inset-0 bg-gradient-to-t from-navy-900/50 to-transparent" />
+          <button className="absolute top-4 right-4 p-2 bg-black/20 backdrop-blur-sm rounded-lg text-white/80 hover:text-white hover:bg-black/30 transition-all">
+            <Camera size={16} />
           </button>
         </div>
 
-        {/* Profile Info */}
-        <div className="absolute -bottom-16 left-4 sm:left-8">
+        <div className="absolute -bottom-12 left-4 sm:left-6">
           <div className="relative">
-            <img
-              src={user?.avatar}
-              alt={user?.name}
-              className="w-32 h-32 rounded-full border-4 border-white shadow-lg"
-            />
-            <button className="absolute bottom-2 right-2 p-2 bg-primary-600 rounded-full text-white hover:bg-primary-700">
-              <Camera size={14} />
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-navy-300 to-navy-500 flex items-center justify-center text-white text-3xl font-serif font-bold ring-4 ring-white shadow-lg">
+              {user?.name?.charAt(0) || 'U'}
+            </div>
+            <button className="absolute bottom-1 right-1 p-1.5 bg-navy-700 rounded-full text-white hover:bg-navy-800 transition-colors">
+              <Camera size={12} />
             </button>
           </div>
         </div>
       </div>
 
-      {/* Profile Header */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm pt-20 pb-6 px-6">
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+      {/* Profile Info */}
+      <div className="bg-white rounded-2xl border border-warm-100 shadow-sm pt-16 pb-6 px-6">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-800">{user?.name}</h1>
-            <p className="text-slate-500 text-sm">@{user?.username}</p>
-            <p className="text-slate-600 text-sm mt-2 max-w-md">{user?.bio}</p>
-            <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-slate-500">
-              <span className="flex items-center gap-1">
-                <MapPin size={14} /> {user?.city}, {user?.state}
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-serif font-bold text-navy-900">{user?.name}</h1>
+              {user?.isVerified && (
+                <span className="w-5 h-5 bg-navy-600 rounded-full flex items-center justify-center">
+                  <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                </span>
+              )}
+            </div>
+            <p className="text-warm-500 text-sm">@{user?.username}</p>
+            <p className="text-warm-600 text-sm mt-2 max-w-md leading-relaxed">{user?.bio}</p>
+            
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-3 text-sm text-warm-500">
+              <span className="flex items-center gap-1.5">
+                <MapPin size={14} className="text-warm-400" /> {user?.city}, {user?.state}
               </span>
-              <span className="flex items-center gap-1">
-                <Church size={14} /> {user?.parish}
+              <span className="flex items-center gap-1.5">
+                <Church size={14} className="text-warm-400" /> {user?.parish}
               </span>
-              <span className="flex items-center gap-1">
-                <Heart size={14} className="text-pink-500" /> {user?.patronSaint}
+              <span className="flex items-center gap-1.5">
+                <Heart size={14} className="text-wine-400" /> {user?.patronSaint}
               </span>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-xl hover:bg-primary-700 transition-all">
-              <Edit3 size={16} />
-              Editar perfil
+            <button className="flex items-center gap-2 px-4 py-2 bg-navy-700 text-white text-sm font-semibold rounded-xl hover:bg-navy-800 transition-all">
+              <Edit3 size={14} /> Editar perfil
             </button>
-            <button className="p-2 border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600">
-              <Settings size={18} />
+            <button className="p-2 border border-warm-200 rounded-xl hover:bg-warm-50 text-warm-600 transition-colors">
+              <Settings size={16} />
             </button>
           </div>
         </div>
 
         {/* Stats */}
-        <div className="flex items-center gap-8 mt-6 pt-6 border-t border-slate-100">
-          <div className="text-center">
-            <p className="text-xl font-bold text-slate-800">{user?.friendsCount}</p>
-            <p className="text-xs text-slate-500">Amigos</p>
-          </div>
-          <div className="text-center">
-            <p className="text-xl font-bold text-slate-800">{user?.followersCount}</p>
-            <p className="text-xs text-slate-500">Seguidores</p>
-          </div>
-          <div className="text-center">
-            <p className="text-xl font-bold text-slate-800">{user?.followingCount}</p>
-            <p className="text-xs text-slate-500">Seguindo</p>
-          </div>
-          <div className="text-center">
-            <p className="text-xl font-bold text-slate-800">{user?.interests.length}</p>
-            <p className="text-xs text-slate-500">Interesses</p>
-          </div>
+        <div className="flex items-center gap-6 sm:gap-8 mt-6 pt-6 border-t border-warm-100">
+          {[
+            { label: 'Amigos', value: user?.friendsCount },
+            { label: 'Seguidores', value: user?.followersCount },
+            { label: 'Seguindo', value: user?.followingCount },
+          ].map(stat => (
+            <div key={stat.label} className="text-center sm:text-left">
+              <p className="text-xl font-bold text-navy-800">{stat.value}</p>
+              <p className="text-xs text-warm-500 font-medium">{stat.label}</p>
+            </div>
+          ))}
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
-        <div className="flex border-b border-slate-100 overflow-x-auto">
+      <div className="bg-white rounded-2xl border border-warm-100 shadow-sm">
+        <div className="flex border-b border-warm-100">
           {tabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-6 py-4 text-sm font-medium whitespace-nowrap border-b-2 transition-all ${
-                activeTab === tab.id
-                  ? 'border-primary-600 text-primary-600'
-                  : 'border-transparent text-slate-500 hover:text-slate-700'
-              }`}
-            >
-              <tab.icon size={18} />
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-5 py-4 text-sm font-medium whitespace-nowrap border-b-2 transition-all ${
+                activeTab === tab.id ? 'border-navy-600 text-navy-800' : 'border-transparent text-warm-500 hover:text-warm-700'
+              }`}>
+              <tab.icon size={16} />
               {tab.label}
+              {tab.count !== undefined && (
+                <span className="text-xs bg-warm-100 text-warm-600 px-1.5 py-0.5 rounded-md">{tab.count}</span>
+              )}
             </button>
           ))}
         </div>
 
         <div className="p-6">
           {activeTab === 'posts' && (
-            <div className="space-y-4">
-              <div className="text-center py-12">
-                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <FileText size={24} className="text-slate-400" />
-                </div>
-                <p className="text-slate-600 font-medium">Suas publicações aparecerão aqui</p>
-                <p className="text-sm text-slate-400 mt-1">Compartilhe algo com a comunidade</p>
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-warm-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FileText size={24} className="text-warm-400" />
               </div>
+              <p className="text-warm-600 font-medium">Suas publicações aparecerão aqui</p>
+              <p className="text-sm text-warm-400 mt-1">Compartilhe algo com a comunidade</p>
             </div>
           )}
 
           {activeTab === 'about' && (
             <div className="space-y-6">
               <div>
-                <h3 className="font-semibold text-slate-800 mb-3">Sobre mim</h3>
-                <p className="text-sm text-slate-600">{user?.bio}</p>
+                <h3 className="font-semibold text-navy-800 mb-3 text-sm uppercase tracking-wider">Sobre mim</h3>
+                <p className="text-sm text-warm-600 leading-relaxed">{user?.bio}</p>
               </div>
               <div>
-                <h3 className="font-semibold text-slate-800 mb-3">Informações</h3>
+                <h3 className="font-semibold text-navy-800 mb-3 text-sm uppercase tracking-wider">Informações</h3>
                 <div className="space-y-3">
-                  <div className="flex items-center gap-3 text-sm">
-                    <MapPin size={16} className="text-slate-400" />
-                    <span className="text-slate-600">{user?.city}, {user?.state}, {user?.country}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-sm">
-                    <Church size={16} className="text-slate-400" />
-                    <span className="text-slate-600">{user?.parish}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-sm">
-                    <BookOpen size={16} className="text-slate-400" />
-                    <span className="text-slate-600">{user?.diocese}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-sm">
-                    <Heart size={16} className="text-pink-400" />
-                    <span className="text-slate-600">Santo de devoção: {user?.patronSaint}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-sm">
-                    <Calendar size={16} className="text-slate-400" />
-                    <span className="text-slate-600">Membro desde {new Date(user?.joinedAt || '').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</span>
-                  </div>
+                  {[
+                    { icon: MapPin, text: `${user?.city}, ${user?.state}, ${user?.country}` },
+                    { icon: Church, text: user?.parish },
+                    { icon: BookOpen, text: user?.diocese },
+                    { icon: Heart, text: `Santo de devoção: ${user?.patronSaint}` },
+                    { icon: Calendar, text: `Membro desde ${new Date(user?.joinedAt || '').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}` },
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-center gap-3 text-sm">
+                      <item.icon size={16} className="text-warm-400 flex-shrink-0" />
+                      <span className="text-warm-600">{item.text}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
               <div>
-                <h3 className="font-semibold text-slate-800 mb-3">Interesses</h3>
+                <h3 className="font-semibold text-navy-800 mb-3 text-sm uppercase tracking-wider">Interesses</h3>
                 <div className="flex flex-wrap gap-2">
                   {user?.interests?.map((interest: string) => (
-                    <span key={interest} className="px-3 py-1.5 bg-primary-50 text-primary-700 rounded-full text-sm font-medium">
+                    <span key={interest} className="px-3 py-1.5 bg-navy-50 text-navy-700 rounded-full text-xs font-medium">
                       {interest}
                     </span>
                   ))}
@@ -177,26 +165,18 @@ export default function ProfilePage() {
 
           {activeTab === 'friends' && (
             <div className="space-y-4">
-              <h3 className="font-semibold text-slate-800">Amigos em comum</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <h3 className="font-semibold text-navy-800 text-sm uppercase tracking-wider">Amigos em comum</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {friendSuggestions.map(friend => (
-                  <div key={friend.id} className="flex flex-col items-center p-4 rounded-xl bg-slate-50 hover:bg-slate-100 transition-all cursor-pointer">
-                    <img src={friend.avatar} alt="" className="w-16 h-16 rounded-full mb-2" />
-                    <p className="text-sm font-medium text-slate-800 text-center">{friend.name}</p>
-                    <p className="text-xs text-slate-500">{friend.city}</p>
+                  <div key={friend.id} className="flex flex-col items-center p-4 rounded-xl bg-warm-50 hover:bg-warm-100 transition-all cursor-pointer">
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-navy-200 to-navy-400 flex items-center justify-center text-white font-semibold mb-2">
+                      {friend.name.charAt(0)}
+                    </div>
+                    <p className="text-sm font-medium text-warm-800 text-center">{friend.name}</p>
+                    <p className="text-xs text-warm-500">{friend.city}</p>
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-
-          {activeTab === 'saved' && (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Bookmark size={24} className="text-slate-400" />
-              </div>
-              <p className="text-slate-600 font-medium">Publicações salvas</p>
-              <p className="text-sm text-slate-400 mt-1">Salve publicações para ver depois</p>
             </div>
           )}
         </div>
