@@ -1,4 +1,4 @@
-import { getSupabase } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 import type { PrayerIntention, PrayerVisibility } from '../types/database';
 
 export interface CreatePrayerIntentionData {
@@ -10,7 +10,6 @@ export interface CreatePrayerIntentionData {
 
 export const prayerService = {
   async createIntention(userId: string, data: CreatePrayerIntentionData): Promise<{ intention: PrayerIntention | null; error: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) return { intention: null, error: 'Supabase não configurado' };
     try {
       const { data: intention, error } = await (supabase as any).from('prayer_intentions').insert({
@@ -23,7 +22,6 @@ export const prayerService = {
   },
 
   async getIntentions(limit: number = 50, cursor?: string): Promise<{ intentions: PrayerIntention[]; error: string | null; nextCursor?: string }> {
-    const supabase = getSupabase();
     if (!supabase) return { intentions: [], error: 'Supabase não configurado' };
     try {
       let query = (supabase as any).from('prayer_intentions').select(`*, author:profiles!author_id(id, display_name, username, avatar_url, is_verified)`).eq('visibility', 'PUBLIC').order('created_at', { ascending: false }).limit(limit);
@@ -37,7 +35,6 @@ export const prayerService = {
   },
 
   async supportIntention(intentionId: string, userId: string): Promise<{ supported: boolean; error: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) return { supported: false, error: 'Supabase não configurado' };
     try {
       const { data: existing } = await (supabase as any).from('prayer_supports').select('id').eq('intention_id', intentionId).eq('user_id', userId).single();
@@ -54,7 +51,6 @@ export const prayerService = {
   },
 
   async isSupporting(intentionId: string, userId: string): Promise<boolean> {
-    const supabase = getSupabase();
     if (!supabase) return false;
     try {
       const { data } = await (supabase as any).from('prayer_supports').select('id').eq('intention_id', intentionId).eq('user_id', userId).single();
@@ -63,7 +59,6 @@ export const prayerService = {
   },
 
   async deleteIntention(intentionId: string, userId: string): Promise<{ error: string | null }> {
-    const supabase = getSupabase();
     if (!supabase) return { error: 'Supabase não configurado' };
     try {
       const { error } = await (supabase as any).from('prayer_intentions').delete().eq('id', intentionId).eq('author_id', userId);
